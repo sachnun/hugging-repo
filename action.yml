@@ -1,6 +1,6 @@
 name: Hugging Repo
 description: GitHub action that'll push files of the current github code repository to the hugging face space code repository.
-author: backendcloud
+author: sachnun
 branding:
   icon: refresh-cw
   color: green
