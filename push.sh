@@ -49,7 +49,6 @@ fi
 
 # Set defaults
 REPO_TYPE=${REPO_TYPE:-"space"}
-SPACE_SDK=${SPACE_SDK:-"gradio"}
 PRIVATE=${PRIVATE:-"false"}
 
 echo "Syncing with Hugging Face Spaces..."
@@ -75,6 +74,23 @@ fi
 
 echo -e "\t- Repo ID: $HUGGINGFACE_REPO"
 echo -e "\t- Github_repo: $GITHUB_REPO"
+
+# Determine directory path for auto-detection
+LATTER_REPO=$(echo "$GITHUB_REPO" | cut -d'/' -f2)
+DIRECTORY="work/$LATTER_REPO/$LATTER_REPO"
+
+# Auto-detect space_sdk if not set and repo_type is space
+if [ "$REPO_TYPE" = "space" ] && [ -z "$SPACE_SDK" ]; then
+    if [ -f "$DIRECTORY/Dockerfile" ]; then
+        SPACE_SDK="docker"
+        echo -e "\t- Auto-detected space_sdk: docker (Dockerfile found)"
+    else
+        SPACE_SDK="gradio"
+        echo -e "\t- Auto-detected space_sdk: gradio (default)"
+    fi
+else
+    SPACE_SDK=${SPACE_SDK:-"gradio"}
+fi
 
 # Create repository
 echo -e "\t- Creating repository..."
@@ -112,9 +128,7 @@ else
     exit 1
 fi
 
-# Determine directory path
-LATTER_REPO=$(echo "$GITHUB_REPO" | cut -d'/' -f2)
-DIRECTORY="work/$LATTER_REPO/$LATTER_REPO"
+# Check if directory exists
 
 if [ ! -d "$DIRECTORY" ]; then
     echo "Error: Directory $DIRECTORY does not exist"

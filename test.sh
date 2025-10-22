@@ -296,8 +296,65 @@ echo "Test 16: Testing missing work directory error..."
 # For now, we skip this test as it would require complex mocking
 echo -e "${YELLOW}  → Skipped: Requires API mocking${NC}"
 
-# Test 17: Check if all required inputs from action.yml are handled in push.sh
-echo "Test 17: Validating action.yml and push.sh consistency..."
+# Test 17: Test auto-detection of space_sdk based on Dockerfile
+echo "Test 17: Testing space_sdk auto-detection..."
+
+# Test with Dockerfile present (should auto-detect docker)
+TEST_DIR=$(mktemp -d)
+SCRIPT_PATH="$PWD/push.sh"
+mkdir -p "$TEST_DIR/work/test-repo/test-repo"
+echo "FROM python:3.9" > "$TEST_DIR/work/test-repo/test-repo/Dockerfile"
+echo "test" > "$TEST_DIR/work/test-repo/test-repo/README.md"
+
+set +e
+OUTPUT=$(cd "$TEST_DIR" && "$SCRIPT_PATH" --token 'test_token' --github_repo 'test/test-repo' --huggingface_repo 'user/repo' 2>&1)
+set -e
+
+if echo "$OUTPUT" | grep -q "Auto-detected space_sdk: docker"; then
+    print_test "Auto-detect docker SDK with Dockerfile" "PASS"
+else
+    print_test "Auto-detect docker SDK with Dockerfile" "FAIL"
+fi
+
+rm -rf "$TEST_DIR"
+
+# Test without Dockerfile (should auto-detect gradio)
+TEST_DIR=$(mktemp -d)
+mkdir -p "$TEST_DIR/work/test-repo/test-repo"
+echo "test" > "$TEST_DIR/work/test-repo/test-repo/README.md"
+
+set +e
+OUTPUT=$(cd "$TEST_DIR" && "$SCRIPT_PATH" --token 'test_token' --github_repo 'test/test-repo' --huggingface_repo 'user/repo' 2>&1)
+set -e
+
+if echo "$OUTPUT" | grep -q "Auto-detected space_sdk: gradio"; then
+    print_test "Auto-detect gradio SDK without Dockerfile" "PASS"
+else
+    print_test "Auto-detect gradio SDK without Dockerfile" "FAIL"
+fi
+
+rm -rf "$TEST_DIR"
+
+# Test with explicit space_sdk (should not auto-detect)
+TEST_DIR=$(mktemp -d)
+mkdir -p "$TEST_DIR/work/test-repo/test-repo"
+echo "FROM python:3.9" > "$TEST_DIR/work/test-repo/test-repo/Dockerfile"
+echo "test" > "$TEST_DIR/work/test-repo/test-repo/README.md"
+
+set +e
+OUTPUT=$(cd "$TEST_DIR" && "$SCRIPT_PATH" --token 'test_token' --github_repo 'test/test-repo' --huggingface_repo 'user/repo' --space_sdk 'streamlit' 2>&1)
+set -e
+
+if echo "$OUTPUT" | grep -q "Auto-detected"; then
+    print_test "No auto-detect when space_sdk explicitly set" "FAIL"
+else
+    print_test "No auto-detect when space_sdk explicitly set" "PASS"
+fi
+
+rm -rf "$TEST_DIR"
+
+# Test 18: Check if all required inputs from action.yml are handled in push.sh
+echo "Test 18: Validating action.yml and push.sh consistency..."
 
 # Extract inputs from action.yml
 if grep -q "huggingface_repo:" action.yml && \

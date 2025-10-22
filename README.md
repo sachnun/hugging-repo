@@ -24,7 +24,7 @@ jobs:
           hf_token: ${{ secrets.HF_TOKEN }}
           # huggingface_repo: 'my-repo' # Optional, defaults to GitHub repo name
           # repo_type: 'space'           # Optional: space, model, or dataset (default: space)
-          # space_sdk: 'gradio'          # Optional: gradio, streamlit, or static (for spaces)
+          # space_sdk: 'gradio'          # Optional: gradio, streamlit, static, or docker (auto-detects docker if Dockerfile exists)
           # private: false               # Optional: create as private repo
 ```
 
