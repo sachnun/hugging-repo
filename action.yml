@@ -7,19 +7,28 @@ branding:
 
 inputs:
   huggingface_repo:
+    description: 'The Hugging Face repository ID (e.g., "my-repo" or "username/my-repo"). Defaults to same name as GitHub repository.'
     type: string
     default: 'same_with_github_repo'
+    required: false
   hf_token:
+    description: 'Hugging Face API token with write access. Get it from https://huggingface.co/settings/tokens'
     required: true
   repo_type:
+    description: 'Type of Hugging Face repository: "space", "model", or "dataset"'
     type: string
     default: 'space'
+    required: false
   space_sdk:
+    description: 'Space SDK type (only for repo_type=space): "gradio", "streamlit", or "static"'
     type: string
     default: 'gradio'
+    required: false
   private:
+    description: 'Whether to create a private repository (only applies when creating new repo)'
     type: boolean
     default: false
+    required: false
 
 runs:
   using: "composite"
