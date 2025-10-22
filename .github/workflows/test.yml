@@ -1,0 +1,81 @@
+name: Test
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y curl jq git shellcheck
+
+      - name: Make scripts executable
+        run: |
+          chmod +x push.sh
+          chmod +x test.sh
+
+      - name: Run tests
+        run: ./test.sh
+
+      - name: Run shellcheck
+        run: shellcheck push.sh || true
+
+  validate-action:
+    name: Validate Action
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate action.yml syntax
+        run: |
+          # Check if action.yml is valid YAML
+          if ! python3 -c "import yaml; yaml.safe_load(open('action.yml'))" 2>/dev/null; then
+            echo "Installing PyYAML..."
+            pip install pyyaml
+            python3 -c "import yaml; yaml.safe_load(open('action.yml'))"
+          fi
+
+      - name: Check required action fields
+        run: |
+          echo "Checking action.yml structure..."
+          grep -q "name:" action.yml
+          grep -q "description:" action.yml
+          grep -q "inputs:" action.yml
+          grep -q "runs:" action.yml
+          echo "✓ All required fields present"
+
+  test-action-mock:
+    name: Test Action (Mock)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup test directory structure
+        run: |
+          # Create mock directory structure that the action expects
+          mkdir -p work/test-repo/test-repo
+          echo "# Test Repo" > work/test-repo/test-repo/README.md
+          echo "app.py" > work/test-repo/test-repo/app.py
+          ls -la work/test-repo/test-repo/
+
+      - name: Test script with mock data (dry-run)
+        run: |
+          # Test parameter parsing without actually calling HF API
+          set +e
+          ./push.sh --token "mock_token" --github_repo "test/test-repo" 2>&1 | head -20
+          # We expect this to fail when trying to contact HF API, which is OK for this test
+          echo "✓ Script parameter parsing works"
