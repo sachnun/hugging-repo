@@ -127,7 +127,7 @@ if [ -f "action.yml" ]; then
     fi
 
     # Check if required inputs are defined
-    if grep -q "huggingface_repo:" action.yml && \
+    if grep -q "hf_repo:" action.yml && \
        grep -q "hf_token:" action.yml; then
         print_test "action.yml has required inputs" "PASS"
     else
@@ -182,8 +182,8 @@ fi
 # Cleanup
 rm -rf "$TEST_DIR"
 
-# Test 11: Test huggingface_repo parameter variations
-echo "Test 11: Testing huggingface_repo parameter handling..."
+# Test 11: Test hf_repo parameter variations
+echo "Test 11: Testing hf_repo parameter handling..."
 
 # Test with namespace included
 TEST_DIR=$(mktemp -d)
@@ -192,13 +192,13 @@ mkdir -p "$TEST_DIR/work/test-repo/test-repo"
 echo "test" > "$TEST_DIR/work/test-repo/test-repo/README.md"
 
 set +e
-OUTPUT=$(cd "$TEST_DIR" && "$SCRIPT_PATH" --token 'test_token' --github_repo 'test/test-repo' --huggingface_repo 'user/my-repo' 2>&1)
+OUTPUT=$(cd "$TEST_DIR" && "$SCRIPT_PATH" --token 'test_token' --github_repo 'test/test-repo' --hf_repo 'user/my-repo' 2>&1)
 set -e
 
 if echo "$OUTPUT" | grep -q "Repo ID: user/my-repo"; then
-    print_test "Namespace in huggingface_repo preserved" "PASS"
+    print_test "Namespace in hf_repo preserved" "PASS"
 else
-    print_test "Namespace in huggingface_repo preserved" "FAIL"
+    print_test "Namespace in hf_repo preserved" "FAIL"
 fi
 
 rm -rf "$TEST_DIR"
@@ -278,7 +278,7 @@ mkdir -p "$TEST_DIR/work/test-repo/test-repo"
 echo "test" > "$TEST_DIR/work/test-repo/test-repo/README.md"
 
 set +e
-OUTPUT=$(cd "$TEST_DIR" && "$SCRIPT_PATH" --token 'test_token' --github_repo 'owner/test-repo' --huggingface_repo 'same_with_github_repo' 2>&1)
+OUTPUT=$(cd "$TEST_DIR" && "$SCRIPT_PATH" --token 'test_token' --github_repo 'owner/test-repo' --hf_repo 'same_with_github_repo' 2>&1)
 set -e
 
 if echo "$OUTPUT" | grep -q "owner/test-repo"; then
@@ -307,7 +307,7 @@ echo "FROM python:3.9" > "$TEST_DIR/work/test-repo/test-repo/Dockerfile"
 echo "test" > "$TEST_DIR/work/test-repo/test-repo/README.md"
 
 set +e
-OUTPUT=$(cd "$TEST_DIR" && "$SCRIPT_PATH" --token 'test_token' --github_repo 'test/test-repo' --huggingface_repo 'user/repo' 2>&1)
+OUTPUT=$(cd "$TEST_DIR" && "$SCRIPT_PATH" --token 'test_token' --github_repo 'test/test-repo' --hf_repo 'user/repo' 2>&1)
 set -e
 
 if echo "$OUTPUT" | grep -q "Auto-detected space_sdk: docker"; then
@@ -324,7 +324,7 @@ mkdir -p "$TEST_DIR/work/test-repo/test-repo"
 echo "test" > "$TEST_DIR/work/test-repo/test-repo/README.md"
 
 set +e
-OUTPUT=$(cd "$TEST_DIR" && "$SCRIPT_PATH" --token 'test_token' --github_repo 'test/test-repo' --huggingface_repo 'user/repo' 2>&1)
+OUTPUT=$(cd "$TEST_DIR" && "$SCRIPT_PATH" --token 'test_token' --github_repo 'test/test-repo' --hf_repo 'user/repo' 2>&1)
 set -e
 
 if echo "$OUTPUT" | grep -q "Auto-detected space_sdk: gradio"; then
@@ -342,7 +342,7 @@ echo "FROM python:3.9" > "$TEST_DIR/work/test-repo/test-repo/Dockerfile"
 echo "test" > "$TEST_DIR/work/test-repo/test-repo/README.md"
 
 set +e
-OUTPUT=$(cd "$TEST_DIR" && "$SCRIPT_PATH" --token 'test_token' --github_repo 'test/test-repo' --huggingface_repo 'user/repo' --space_sdk 'streamlit' 2>&1)
+OUTPUT=$(cd "$TEST_DIR" && "$SCRIPT_PATH" --token 'test_token' --github_repo 'test/test-repo' --hf_repo 'user/repo' --space_sdk 'streamlit' 2>&1)
 set -e
 
 if echo "$OUTPUT" | grep -q "Auto-detected"; then
@@ -357,14 +357,14 @@ rm -rf "$TEST_DIR"
 echo "Test 18: Validating action.yml and push.sh consistency..."
 
 # Extract inputs from action.yml
-if grep -q "huggingface_repo:" action.yml && \
+if grep -q "hf_repo:" action.yml && \
    grep -q "hf_token:" action.yml && \
    grep -q "repo_type:" action.yml && \
    grep -q "space_sdk:" action.yml && \
    grep -q "private:" action.yml; then
 
     # Check if push.sh handles all these parameters
-    if grep -q "HUGGINGFACE_REPO" push.sh && \
+    if grep -q "HF_REPO" push.sh && \
        grep -q "HF_TOKEN" push.sh && \
        grep -q "REPO_TYPE" push.sh && \
        grep -q "SPACE_SDK" push.sh && \

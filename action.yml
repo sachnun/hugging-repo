@@ -6,7 +6,7 @@ branding:
   color: green
 
 inputs:
-  huggingface_repo:
+  hf_repo:
     description: 'The Hugging Face repository ID (e.g., "my-repo" or "username/my-repo"). Defaults to same name as GitHub repository.'
     type: string
     default: 'same_with_github_repo'
@@ -39,7 +39,7 @@ runs:
       shell: bash
       run: |
         bash ${{ github.action_path }}/push.sh \
-          --huggingface_repo "${{ inputs.huggingface_repo }}" \
+          --hf_repo "${{ inputs.hf_repo }}" \
           --github_repo "${{ github.repository }}" \
           --token "${{ inputs.hf_token }}" \
           --repo_type "${{ inputs.repo_type }}" \

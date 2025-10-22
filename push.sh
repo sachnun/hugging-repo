@@ -5,8 +5,8 @@ set -e
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
-        --huggingface_repo)
-            HUGGINGFACE_REPO="$2"
+        --hf_repo)
+            HF_REPO="$2"
             shift 2
             ;;
         --github_repo)
@@ -53,13 +53,13 @@ PRIVATE=${PRIVATE:-"false"}
 
 echo "Syncing with Hugging Face Spaces..."
 
-# Handle huggingface_repo name
-if [ "$HUGGINGFACE_REPO" = "same_with_github_repo" ]; then
-    HUGGINGFACE_REPO="$GITHUB_REPO"
+# Handle hf_repo name
+if [ "$HF_REPO" = "same_with_github_repo" ]; then
+    HF_REPO="$GITHUB_REPO"
 fi
 
 # Get username if namespace is implicit
-if [[ ! "$HUGGINGFACE_REPO" =~ "/" ]]; then
+if [[ ! "$HF_REPO" =~ "/" ]]; then
     echo -e "\t- Getting username from Hugging Face..."
     USERNAME=$(curl -s -X GET "https://huggingface.co/api/whoami-v2" \
         -H "Authorization: Bearer $HF_TOKEN" | jq -r '.name')
@@ -69,10 +69,10 @@ if [[ ! "$HUGGINGFACE_REPO" =~ "/" ]]; then
         exit 1
     fi
 
-    HUGGINGFACE_REPO="$USERNAME/$HUGGINGFACE_REPO"
+    HF_REPO="$USERNAME/$HF_REPO"
 fi
 
-echo -e "\t- Repo ID: $HUGGINGFACE_REPO"
+echo -e "\t- Repo ID: $HF_REPO"
 echo -e "\t- Github_repo: $GITHUB_REPO"
 
 # Determine directory path for auto-detection
@@ -120,7 +120,7 @@ RESPONSE_BODY=$(echo "$CREATE_RESPONSE" | head -n-1)
 
 # Check if repo was created or already exists
 if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "409" ]; then
-    REPO_URL="https://huggingface.co/$HUGGINGFACE_REPO"
+    REPO_URL="https://huggingface.co/$HF_REPO"
     echo -e "\t- Repo URL: $REPO_URL"
 else
     echo "Error creating repository. HTTP Code: $HTTP_CODE"
@@ -173,8 +173,8 @@ else
 fi
 
 # Add remote and push
-git remote add space "https://user:${HF_TOKEN}@huggingface.co/spaces/$HUGGINGFACE_REPO" 2>/dev/null || \
-    git remote set-url space "https://user:${HF_TOKEN}@huggingface.co/spaces/$HUGGINGFACE_REPO"
+git remote add space "https://user:${HF_TOKEN}@huggingface.co/spaces/$HF_REPO" 2>/dev/null || \
+    git remote set-url space "https://user:${HF_TOKEN}@huggingface.co/spaces/$HF_REPO"
 
 # Force push to Hugging Face
 git push --force space main

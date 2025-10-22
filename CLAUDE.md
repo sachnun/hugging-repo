@@ -13,7 +13,7 @@ The action consists of two main components:
 1. **action.yml** - GitHub Action composite definition that:
    - Checks out the current repository
    - Executes push.sh with configured parameters
-   - Defines inputs: huggingface_repo, hf_token (required), repo_type, space_sdk, private
+   - Defines inputs: hf_repo, hf_token (required), repo_type, space_sdk, private
 
 2. **push.sh** - Core Bash script that:
    - Parses command-line arguments
@@ -25,7 +25,7 @@ The action consists of two main components:
 
 ### Key Implementation Details
 
-- **Repository URL construction**: If huggingface_repo doesn't contain "/", the script fetches the username via HF API whoami-v2 endpoint and constructs full namespace/repo format
+- **Repository URL construction**: If hf_repo doesn't contain "/", the script fetches the username via HF API whoami-v2 endpoint and constructs full namespace/repo format
 - **Repository types**: Supports "space" (default), "model", or "dataset"
 - **Space SDK types**: For spaces only - "gradio" (default), "streamlit", "static", or "docker"
 - **Auto-detection**: If space_sdk is not provided and repo_type is "space", checks for Dockerfile:
@@ -42,7 +42,7 @@ To test the push script locally:
 
 ```bash
 ./push.sh \
-  --huggingface_repo "my-repo" \
+  --hf_repo "my-repo" \
   --github_repo "owner/repo-name" \
   --token "YOUR_HF_TOKEN" \
   --repo_type "space" \
