@@ -386,6 +386,25 @@ echo -e "${GREEN}Passed: $TESTS_PASSED${NC}"
 echo -e "${RED}Failed: $TESTS_FAILED${NC}"
 echo ""
 
+# Write to GitHub Actions summary if running in CI
+if [ -n "$GITHUB_STEP_SUMMARY" ]; then
+    cat >> "$GITHUB_STEP_SUMMARY" << EOF
+# Test Results
+
+## Summary
+- ✅ **Passed**: $TESTS_PASSED
+- ❌ **Failed**: $TESTS_FAILED
+- 📊 **Total**: $((TESTS_PASSED + TESTS_FAILED))
+
+## Status
+EOF
+    if [ $TESTS_FAILED -eq 0 ]; then
+        echo "🎉 **All tests passed!**" >> "$GITHUB_STEP_SUMMARY"
+    else
+        echo "❌ **Some tests failed!**" >> "$GITHUB_STEP_SUMMARY"
+    fi
+fi
+
 if [ $TESTS_FAILED -eq 0 ]; then
     echo -e "${GREEN}All tests passed!${NC}"
     exit 0
