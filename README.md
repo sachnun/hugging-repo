@@ -1,4 +1,4 @@
-# hugging-push
+# hugging-repo
 
 GitHub action that'll push files of the current github code repository to the hugging face space code repository.
 
@@ -34,7 +34,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: backendcloud/hugging-push@v1.0.0
+      - uses: sachnun/hugging-repo@v1
         with:
           # The Hugging Face repo id you want to sync to.
           # A repo with this name will be created if it doesn't exist. Required.
@@ -90,3 +90,12 @@ bash push.sh \
   --space_sdk "gradio" \
   --private "false"
 ```
+
+## Authors
+
+- **backendcloud** - Original creator
+- **sachnun** - Bash implementation and maintenance
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
