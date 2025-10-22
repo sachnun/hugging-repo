@@ -79,6 +79,12 @@ echo -e "\t- Github_repo: $GITHUB_REPO"
 LATTER_REPO=$(echo "$GITHUB_REPO" | cut -d'/' -f2)
 DIRECTORY="work/$LATTER_REPO/$LATTER_REPO"
 
+# If work directory doesn't exist, use current directory
+if [ ! -d "$DIRECTORY" ]; then
+    DIRECTORY="."
+    echo -e "\t- Using current directory"
+fi
+
 # Auto-detect space_sdk if not set and repo_type is space
 if [ "$REPO_TYPE" = "space" ] && [ -z "$SPACE_SDK" ]; then
     if [ -f "$DIRECTORY/Dockerfile" ]; then
@@ -95,18 +101,23 @@ fi
 # Create repository
 echo -e "\t- Creating repository..."
 
+# Extract repo name (without namespace) for API call
+REPO_NAME=$(echo "$HF_REPO" | cut -d'/' -f2)
+
 # Prepare JSON payload
 if [ "$REPO_TYPE" = "space" ]; then
     JSON_PAYLOAD=$(jq -n \
+        --arg name "$REPO_NAME" \
         --arg type "$REPO_TYPE" \
         --arg sdk "$SPACE_SDK" \
         --argjson private "$([ "$PRIVATE" = "true" ] && echo true || echo false)" \
-        '{type: $type, sdk: $sdk, private: $private}')
+        '{name: $name, type: $type, sdk: $sdk, private: $private}')
 else
     JSON_PAYLOAD=$(jq -n \
+        --arg name "$REPO_NAME" \
         --arg type "$REPO_TYPE" \
         --argjson private "$([ "$PRIVATE" = "true" ] && echo true || echo false)" \
-        '{type: $type, private: $private}')
+        '{name: $name, type: $type, private: $private}')
 fi
 
 CREATE_RESPONSE=$(curl -s -X POST "https://huggingface.co/api/repos/create" \
@@ -120,7 +131,18 @@ RESPONSE_BODY=$(echo "$CREATE_RESPONSE" | head -n-1)
 
 # Check if repo was created or already exists
 if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "409" ]; then
-    REPO_URL="https://huggingface.co/$HF_REPO"
+    # Construct repo URL based on type
+    case "$REPO_TYPE" in
+        space)
+            REPO_URL="https://huggingface.co/spaces/$HF_REPO"
+            ;;
+        model)
+            REPO_URL="https://huggingface.co/$HF_REPO"
+            ;;
+        dataset)
+            REPO_URL="https://huggingface.co/datasets/$HF_REPO"
+            ;;
+    esac
     echo -e "\t- Repo URL: $REPO_URL"
 else
     echo "Error creating repository. HTTP Code: $HTTP_CODE"
@@ -173,8 +195,25 @@ else
 fi
 
 # Add remote and push
-git remote add space "https://user:${HF_TOKEN}@huggingface.co/spaces/$HF_REPO" 2>/dev/null || \
-    git remote set-url space "https://user:${HF_TOKEN}@huggingface.co/spaces/$HF_REPO"
+# Construct repo URL based on type
+case "$REPO_TYPE" in
+    space)
+        REMOTE_URL="https://user:${HF_TOKEN}@huggingface.co/spaces/$HF_REPO"
+        ;;
+    model)
+        REMOTE_URL="https://user:${HF_TOKEN}@huggingface.co/$HF_REPO"
+        ;;
+    dataset)
+        REMOTE_URL="https://user:${HF_TOKEN}@huggingface.co/datasets/$HF_REPO"
+        ;;
+    *)
+        echo "Error: Unknown repo_type: $REPO_TYPE"
+        exit 1
+        ;;
+esac
+
+git remote add space "$REMOTE_URL" 2>/dev/null || \
+    git remote set-url space "$REMOTE_URL"
 
 # Force push to Hugging Face
 git push --force space main
