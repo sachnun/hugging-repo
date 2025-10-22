@@ -1,4 +1,4 @@
-name: HuggingFace Space Sync
+name: Hugging Repo
 description: GitHub action that'll push files of the current github code repository to the hugging face space code repository.
 author: backendcloud
 branding:
